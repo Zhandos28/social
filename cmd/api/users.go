@@ -87,6 +87,7 @@ func (app *application) userContextMiddleware(next http.Handler) http.Handler {
 			switch {
 			case errors.Is(err, store.ErrNotFound):
 				app.notFoundError(w, r, err)
+				return
 			default:
 				app.internalServerError(w, r, err)
 			}

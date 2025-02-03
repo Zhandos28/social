@@ -1,18 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"github.com/Zhandos28/social/internal/db"
 	"github.com/Zhandos28/social/internal/env"
 	"github.com/Zhandos28/social/internal/store"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 	"log"
 )
 
 func main() {
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logger.Fatalw("Error loading .env file", "error", err)
 	}
 
 	cfg := config{
@@ -33,15 +36,16 @@ func main() {
 	}
 
 	defer db.Close()
-	fmt.Println("database connection pool established")
+	logger.Info("database connection pool established")
 
 	store := store.NewStorage(db)
 
 	app := application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 
 	mux := app.mount()
-	log.Fatal(app.run(mux))
+	logger.Fatal(app.run(mux))
 }

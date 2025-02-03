@@ -68,6 +68,7 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, store.ErrNotFound):
 			app.notFoundError(w, r, err)
+			return
 		default:
 			app.internalServerError(w, r, err)
 		}
@@ -100,6 +101,7 @@ func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request
 		switch {
 		case errors.Is(err, store.ErrNotFound):
 			app.notFoundError(w, r, err)
+			return
 		default:
 			app.internalServerError(w, r, err)
 		}
@@ -163,6 +165,7 @@ func (app *application) postsContextMiddleware(next http.Handler) http.Handler {
 			switch {
 			case errors.Is(err, store.ErrNotFound):
 				app.notFoundError(w, r, err)
+				return
 			default:
 				app.internalServerError(w, r, err)
 			}
