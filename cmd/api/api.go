@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/Zhandos28/social/docs"
+	"github.com/Zhandos28/social/internal/mailer"
 	"github.com/Zhandos28/social/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -17,15 +18,17 @@ type application struct {
 	config config
 	store  *store.Storage
 	logger *zap.SugaredLogger
+	mailer mailer.Client
 }
 
 type config struct {
-	addr    string
-	db      dbConfig
-	env     string
-	version string
-	apiURL  string
-	mail    mailConfig
+	addr        string
+	db          dbConfig
+	env         string
+	version     string
+	apiURL      string
+	mail        mailConfig
+	frontendURL string
 }
 
 type dbConfig struct {
@@ -80,6 +83,7 @@ func (app *application) mount() http.Handler {
 		})
 
 		r.Route("/users", func(r chi.Router) {
+			r.Put("activate/{token}", app.activateUserHandler)
 			r.Route("/{userID}", func(r chi.Router) {
 				r.Use(app.userContextMiddleware)
 

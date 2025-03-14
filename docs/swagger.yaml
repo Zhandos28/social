@@ -16,6 +16,19 @@ definitions:
     - content
     - title
     type: object
+  main.CreateUserTokenPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    type: object
   main.RegisterUserPayload:
     properties:
       email:
@@ -53,6 +66,8 @@ definitions:
         type: string
       id:
         type: integer
+      is_active:
+        type: boolean
       token:
         type: string
       username:
@@ -133,6 +148,8 @@ definitions:
         type: string
       id:
         type: integer
+      is_active:
+        type: boolean
       username:
         type: string
     type: object
@@ -148,6 +165,37 @@ info:
   termsOfService: http://swagger.io/terms/
   title: GopherSocial API
 paths:
+  /authentication/token:
+    post:
+      consumes:
+      - application/json
+      description: Creates a token for a user
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/main.CreateUserTokenPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+        "401":
+          description: Unauthorized
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Creates a token
+      tags:
+      - authentication
   /authentication/user:
     post:
       consumes:
@@ -378,6 +426,33 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Follows a user
+      tags:
+      - users
+  /users/activate/{token}:
+    put:
+      description: Activates/Register a user by invitation token
+      parameters:
+      - description: Invitation token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User activated
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: Activates/Register a user
       tags:
       - users
   /users/feed:

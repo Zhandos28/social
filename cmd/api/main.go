@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Zhandos28/social/internal/db"
 	"github.com/Zhandos28/social/internal/env"
+	"github.com/Zhandos28/social/internal/mailer"
 	"github.com/Zhandos28/social/internal/store"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -39,7 +40,9 @@ func main() {
 	}
 
 	cfg := config{
-		addr: env.GetString("ADDR", ":8080"),
+		addr:        env.GetString("ADDR", ":8080"),
+		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8080"),
+		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
 		db: dbConfig{
 			addr:           env.GetString("DB_ADDR", "postgres//admin:adminpassword@localhost:5432/social?sslmode=disable"),
 			maxOpenConns:   env.GetInt("DB_MAX_OPEN_CONNS", 30),
@@ -70,10 +73,18 @@ func main() {
 
 	store := store.NewStorage(db)
 
+	// Mailer
+	// mailer := mailer.NewSendgrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
+	mailtrap, err := mailer.NewMailTrapClient(cfg.mail.mailTrap.apiKey, cfg.mail.fromEmail)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	app := application{
 		config: cfg,
 		store:  store,
 		logger: logger,
+		mailer: mailtrap,
 	}
 
 	mux := app.mount()
